@@ -3,16 +3,16 @@ import yaml
 import imaplib
 
 class MailBox:
-    def __init__(self, host: str, port_imap: int, username: str, password: str, workdir: str):
-        self.username = username
+    def __init__(self, host: str, port_imap: int, login: str, password: str, workdir: str):
+        self.login = login
         self.password = password
-        self.workdir, = workdir
+        self.workdir = workdir
         self.server = imaplib.IMAP4_SSL(host, port_imap)
 
     def login(self):
         """ Funkcja odpowiedzialna za logowanie do skrzynki pocztowej """
         self.server.ehlo()
-        self.server.login(self.username, self.password)
+        self.server.login(self.login, self.password)
 
     def get_count(self):
         """ Funkcja zliczajaca ilosc wiadomosci w danym folderze """
@@ -32,25 +32,26 @@ class MailBox:
 def load_config():
     with open('config.yaml', 'r') as config_file:
         config = yaml.safe_load(config_file)
-        print(config)
+    return config
+
 
 @click.group
-@click.option('-w', '--workdir', default='Inbox')
+@click.option('-w', '--workdir', default='Inbox', help='wybierz katalog (domyślnie: Inbox)')
 def main(workdir):
-    load_config()
-    print(workdir)
+    config = load_config()
+    mail_box = MailBox(host=config['host'], port_imap=config['port_imap'], login=config['login'], password=config['password'], workdir=workdir)
+    mail_box.login()
+    #print(mail_box.get_count())
 
-
-@main.command()
-@click.argument('-l', is_flag=True)
+@main.command(help='lista wiadomości')
 def mails():
-    print('lista emajlów')
+    pass
 
 
-@main.command()
-@click.option('-m', '--search_module', type=click.Choice(['sender', 'header',  'content'], case_sensitive=False), required=True)
-@click.option('-p', '--search_pattern', required=True)
-def search():
+@main.command(help='wyszykiwanie')
+@click.option('-m', '--search_module', type=click.Choice(['sender', 'header',  'content'], case_sensitive=False), required=True, help='search place')
+@click.option('-p', '--search_pattern', required=True, help='search-pattern')
+def search(search_module, search_pattern):
     pass
 
 
