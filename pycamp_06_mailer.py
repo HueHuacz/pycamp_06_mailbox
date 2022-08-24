@@ -2,6 +2,7 @@ import click
 import yaml
 import imaplib
 
+
 class MailBox:
     def __init__(self, host: str, port_imap: int, login: str, password: str, workdir: str):
         self.login = login
@@ -9,9 +10,9 @@ class MailBox:
         self.workdir = workdir
         self.server = imaplib.IMAP4_SSL(host, port_imap)
 
-    def login(self):
+    def loginsex(self):
         """ Funkcja odpowiedzialna za logowanie do skrzynki pocztowej """
-        self.server.ehlo()
+        # self.server.ehlo()
         self.server.login(self.login, self.password)
 
     def get_count(self):
@@ -22,7 +23,6 @@ class MailBox:
 
     def mails_list(self):
         pass
-
 
     def __exit__(self):
         self.server.close()
@@ -40,8 +40,9 @@ def load_config():
 def main(workdir):
     config = load_config()
     mail_box = MailBox(host=config['host'], port_imap=config['port_imap'], login=config['login'], password=config['password'], workdir=workdir)
-    mail_box.login()
-    #print(mail_box.get_count())
+    mail_box.loginsex()
+    print(mail_box.get_count())
+
 
 @main.command(help='lista wiadomości')
 def mails():
