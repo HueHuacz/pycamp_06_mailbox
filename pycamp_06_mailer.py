@@ -1,7 +1,8 @@
 import click
 import yaml
 import imaplib
-
+from email import message_from_bytes
+from email.header import decode_header
 
 class MailBox:
     def __init__(self, host: str, port_imap: int, login: str, password: str, workdir: str):
@@ -22,14 +23,32 @@ class MailBox:
     def get_count(self):
         """ Funkcja zliczajaca ilosc wiadomosci w danym folderze """
         self.server.select(self.workdir)
-        _, data = self.server.search(None, 'ALL')
-        return sum(1 for num in data[0].split())
+        _, messages = self.server.search(None, 'ALL')
+        return sum(1 for num in messages[0].split())
 
-    def show_mails(self):
+    def show_new_mails(self):
+        messages_dir = {}
         self.server.select(self.workdir)
-        status, data = self.server.search(None, 'ALL')
-        return status, data
+        _, message_ids = self.server.search(None, 'ALL')
+        for message_id in message_ids[0].split():
+            _, msg = self.server.fetch(message_id, '(RFC822)')
+            message = message_from_bytes(msg[0][1])
 
+            subject, _ = decode_header(message['Subject'])[0]
+            if not isinstance(subject, str):
+                subject = subject.decode('utf-8')
+
+            sender = message['From']
+
+            content = message.get_payload(decode=True)
+            
+            for part in message.walk():
+                if part.get_filename() is not None:
+                    messages_dir[message_id.decode("utf-8")] = [sender, subject, content, part.get_filename()]
+                else:
+                    messages_dir[message_id.decode("utf-8")] = [sender, subject, content, 'brak załącznika']
+
+        print(messages_dir)
 
 def load_config():
     with open('config.yaml', 'r') as config_file:
@@ -43,7 +62,7 @@ def main(workdir):
     config = load_config()
     with MailBox(config['host'], config['port_imap'], config['login'], config['password'], workdir) as mail_box:
         print(mail_box.get_count())
-        print(mail_box.show_mails())
+        mail_box.show_new_mails()
 
 
 @main.command(help='lista wiadomości')
