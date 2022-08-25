@@ -4,6 +4,7 @@ import imaplib
 from email import message_from_bytes
 from email.header import decode_header
 
+
 class MailBox:
     def __init__(self, host: str, port_imap: int, login: str, password: str, workdir: str):
         self.login = login
@@ -29,7 +30,7 @@ class MailBox:
     def show_new_mails(self):
         messages_dir = {}
         self.server.select(self.workdir)
-        _, message_ids = self.server.search(None, 'NEW')
+        _, message_ids = self.server.search(None, 'ALL')
         for message_id in message_ids[0].split():
             _, msg = self.server.fetch(message_id, '(RFC822)')
             message = message_from_bytes(msg[0][1])
@@ -41,7 +42,7 @@ class MailBox:
             sender = message['From']
 
             content = message.get_payload(decode=True)
-            
+
             for part in message.walk():
                 if part.get_filename() is not None:
                     messages_dir[message_id.decode("utf-8")] = [sender, subject, content, part.get_filename()]
@@ -49,6 +50,7 @@ class MailBox:
                     messages_dir[message_id.decode("utf-8")] = [sender, subject, content, 'brak załącznika']
 
         return messages_dir
+
 
 def load_config():
     with open('config.yaml', 'r') as config_file:
