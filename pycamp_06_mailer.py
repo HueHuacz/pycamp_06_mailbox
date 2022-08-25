@@ -29,7 +29,7 @@ class MailBox:
     def show_new_mails(self):
         messages_dir = {}
         self.server.select(self.workdir)
-        _, message_ids = self.server.search(None, 'ALL')
+        _, message_ids = self.server.search(None, 'NEW')
         for message_id in message_ids[0].split():
             _, msg = self.server.fetch(message_id, '(RFC822)')
             message = message_from_bytes(msg[0][1])
@@ -48,7 +48,7 @@ class MailBox:
                 else:
                     messages_dir[message_id.decode("utf-8")] = [sender, subject, content, 'brak załącznika']
 
-        print(messages_dir)
+        return messages_dir
 
 def load_config():
     with open('config.yaml', 'r') as config_file:
@@ -62,7 +62,7 @@ def main(workdir):
     config = load_config()
     with MailBox(config['host'], config['port_imap'], config['login'], config['password'], workdir) as mail_box:
         print(mail_box.get_count())
-        mail_box.show_new_mails()
+        print(mail_box.show_new_mails())
 
 
 @main.command(help='lista wiadomości')
