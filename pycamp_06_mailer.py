@@ -49,6 +49,10 @@ class MailBox:
                 else:
                     messages_dir[message_id.decode("utf-8")] = [sender, subject, content, 'brak załącznika']
 
+            # if part.get_filename() is not None:
+            #     with open('pobrane/' + part.get_filename(), 'wb') as file:
+            #         file.write(part.get_filename(decode=True))
+
         return messages_dir
 
 
