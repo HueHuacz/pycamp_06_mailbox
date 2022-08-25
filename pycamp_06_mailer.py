@@ -10,10 +10,14 @@ class MailBox:
         self.workdir = workdir
         self.server = imaplib.IMAP4_SSL(host, port_imap)
 
-    def loginsex(self):
+    def __enter__(self):
         """ Funkcja odpowiedzialna za logowanie do skrzynki pocztowej """
-        # self.server.ehlo()
         self.server.login(self.login, self.password)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.server.close()
+        self.server.logout()
 
     def get_count(self):
         """ Funkcja zliczajaca ilosc wiadomosci w danym folderze """
@@ -21,12 +25,10 @@ class MailBox:
         _, data = self.server.search(None, 'ALL')
         return sum(1 for num in data[0].split())
 
-    def mails_list(self):
-        pass
-
-    def __exit__(self):
-        self.server.close()
-        self.server.logout()
+    def show_mails(self):
+        self.server.select(self.workdir)
+        status, data = self.server.search(None, 'ALL')
+        return status, data
 
 
 def load_config():
@@ -39,9 +41,9 @@ def load_config():
 @click.option('-w', '--workdir', default='Inbox', help='wybierz katalog (domyślnie: Inbox)')
 def main(workdir):
     config = load_config()
-    mail_box = MailBox(host=config['host'], port_imap=config['port_imap'], login=config['login'], password=config['password'], workdir=workdir)
-    mail_box.loginsex()
-    print(mail_box.get_count())
+    with MailBox(config['host'], config['port_imap'], config['login'], config['password'], workdir) as mail_box:
+        print(mail_box.get_count())
+        print(mail_box.show_mails())
 
 
 @main.command(help='lista wiadomości')
