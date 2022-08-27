@@ -1,5 +1,0 @@
-host: xxxx
-port_smtp: 465
-port_imap: 993
-login: xxxx
-password: xxxxx
