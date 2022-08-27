@@ -1,0 +1,5 @@
+host: poczta.kei.pl
+port_smtp: 465
+port_imap: 993
+login: tick_validator@kei.pl
+password: 9Sp7MVEt01
