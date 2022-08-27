@@ -1,0 +1,5 @@
+host: host.com.pl
+port_smtp: 465
+port_imap: 993
+login: email@example.com
+password: password123!@#
